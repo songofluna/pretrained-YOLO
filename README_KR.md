@@ -133,14 +133,14 @@ Threshold를 낮추면 더 많은 detection을 남길 수 있지만 confidence�
 
 Bounding box 사이의 overlap을 직접 확인하기 위해 pairwise IoU를 계산하였다.
 
-두 box \(A\), \(B\)에 대해 IoU는 다음과 같다.
+두 box $A$, $B$에 대해 IoU는 다음과 같다.
 
-\[
+$
 \mathrm{IoU}(A,B)
 =
 \frac{|A \cap B|}
 {|A \cup B|}
-\]
+$
 
 실험 중 두 person detection 사이에서 다음과 같이 매우 높은 IoU가 관찰되었다.
 

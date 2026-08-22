@@ -14,7 +14,7 @@
 
 ## Overview
 
-이 프로젝트는 pretrained YOLO model을 단순히 한 번 실행해보는 데서 끝내지 않고, 실제 detection output을 분석한 뒤 video tracking과 object counting까지 확장하는 것을 목표로 한다.
+이 프로젝트는 pretrained YOLO model을 한 번 실행해 보는것 뿐 아니라, 실제 detection output을 분석한 뒤 video tracking과 object counting까지 구현해 보는 것을 목표로 한다.
 
 먼저 한 장의 image에서 bounding box, class, confidence score를 직접 확인하고 confidence threshold와 IoU가 prediction에 어떤 영향을 주는지 살펴본다.
 

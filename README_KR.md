@@ -14,7 +14,7 @@
 
 ## Overview
 
-이 프로젝트는 pretrained YOLO model을 한 번 실행해 보는것 뿐 아니라, 실제 detection output을 분석한 뒤 video tracking과 object counting까지 구현해 보는 것을 목표로 한다.
+이 프로젝트는 pretrained YOLO model을 한 번 실행해 보는 것뿐 아니라, 실제 detection output을 분석한 뒤 video tracking과 object counting까지 구현해 보는 것을 목표로 한다.
 
 먼저 한 장의 image에서 bounding box, class, confidence score를 직접 확인하고 confidence threshold와 IoU가 prediction에 어떤 영향을 주는지 살펴본다.
 
@@ -72,10 +72,10 @@ yolo-detection-tracking/
 
 각 detection에는 다음과 같은 정보가 포함된다.
 
-- bounding box 좌표
-- predicted class ID
-- class name
-- confidence score
+* bounding box 좌표
+* predicted class ID
+* class name
+* confidence score
 
 <p align="center">
   <img src="results/figures/detection_result.png" width="850">
@@ -133,14 +133,11 @@ Threshold를 낮추면 더 많은 detection을 남길 수 있지만 confidence�
 
 Bounding box 사이의 overlap을 직접 확인하기 위해 pairwise IoU를 계산하였다.
 
-두 box $A$, $B$에 대해 IoU는 다음과 같다.
+두 box $A$와 $B$에 대해 IoU는 다음과 같이 정의된다.
 
-$
-\mathrm{IoU}(A,B)
-=
-\frac{|A \cap B|}
-{|A \cup B|}
-$
+$$
+\mathrm{IoU}(A,B) = \frac{|A \cap B|}{|A \cup B|}
+$$
 
 실험 중 두 person detection 사이에서 다음과 같이 매우 높은 IoU가 관찰되었다.
 
@@ -256,30 +253,30 @@ Track ID를 유지하고 있기 때문에 매 frame마다 동일한 object를 �
 
 이 구조는 다음과 같은 실제 응용의 가장 기본적인 형태와 연결된다.
 
-- 차량 통행량 측정
-- 유동인구 계수
-- CCTV analytics
-- 출입 인원 측정
-- smart camera system
+* 차량 통행량 측정
+* 유동인구 계수
+* CCTV analytics
+* 출입 인원 측정
+* smart camera system
 
 ## Key Concepts
 
-| Topic | 확인한 내용 |
-|---|---|
-| Object detection | Bounding box, class, confidence |
-| COCO classes | Pretrained detector가 인식할 수 있는 label space |
-| Confidence threshold | Prediction을 남기는 기준 |
-| IoU | Bounding box 사이의 geometric overlap |
-| NMS | 겹치는 prediction을 제거하는 과정 |
-| Object crop | Box 좌표를 실제 image processing에 사용 |
-| Embedding | Learned image representation 추출 |
-| Cosine similarity | Embedding vector 사이의 similarity |
-| Tracking | Frame 사이에서 object identity 유지 |
-| Track ID | 동일 object를 시간 방향으로 연결 |
-| Trajectory | Object의 이동 경로 시각화 |
-| ID switch | Tracker가 identity를 잘못 연결하는 오류 |
-| Line crossing | Object movement를 event로 변환 |
-| Object counting | Tracking output을 이용한 video analytics |
+| Topic                | 확인한 내용                                    |
+| -------------------- | ----------------------------------------- |
+| Object detection     | Bounding box, class, confidence           |
+| COCO classes         | Pretrained detector가 인식할 수 있는 label space |
+| Confidence threshold | Prediction을 남기는 기준                        |
+| IoU                  | Bounding box 사이의 geometric overlap        |
+| NMS                  | 겹치는 prediction을 제거하는 과정                   |
+| Object crop          | Box 좌표를 실제 image processing에 사용           |
+| Embedding            | Learned image representation 추출           |
+| Cosine similarity    | Embedding vector 사이의 similarity           |
+| Tracking             | Frame 사이에서 object identity 유지             |
+| Track ID             | 동일 object를 시간 방향으로 연결                     |
+| Trajectory           | Object의 이동 경로 시각화                         |
+| ID switch            | Tracker가 identity를 잘못 연결하는 오류             |
+| Line crossing        | Object movement를 event로 변환                |
+| Object counting      | Tracking output을 이용한 video analytics      |
 
 ## What I Learned
 
@@ -287,20 +284,20 @@ Track ID를 유지하고 있기 때문에 매 frame마다 동일한 object를 �
 
 직접 확인한 내용은 다음과 같다.
 
-- YOLO의 plotted result가 아니라 실제 prediction object를 읽는 방법
-- bounding-box coordinate와 confidence score의 의미
-- confidence threshold가 prediction에 미치는 영향
-- bounding box 사이의 IoU 계산
-- IoU와 NMS의 관계
-- detection 좌표를 이용한 object crop
-- pretrained vision model에서 embedding 추출
-- cosine similarity를 이용한 representation 비교
-- generic embedding과 task-specific metric learning의 차이
-- video object tracking
-- frame 사이에서 track ID를 유지하는 방식
-- trajectory visualization을 이용한 tracking 오류 진단
-- line-crossing event detection
-- detection과 tracking output으로 간단한 object counter 구현
+* YOLO의 plotted result가 아니라 실제 prediction object를 읽는 방법
+* bounding-box coordinate와 confidence score의 의미
+* confidence threshold가 prediction에 미치는 영향
+* bounding box 사이의 IoU 계산
+* IoU와 NMS의 관계
+* detection 좌표를 이용한 object crop
+* pretrained vision model에서 embedding 추출
+* cosine similarity를 이용한 representation 비교
+* generic embedding과 task-specific metric learning의 차이
+* video object tracking
+* frame 사이에서 track ID를 유지하는 방식
+* trajectory visualization을 이용한 tracking 오류 진단
+* line-crossing event detection
+* detection과 tracking output으로 간단한 object counter 구현
 
 ## Main Takeaway
 
@@ -342,7 +339,7 @@ Jupyter Notebook
 
 ## Notes
 
-- Pretrained model을 사용했으며 detector 자체를 training하거나 fine-tuning하지 않았다.
-- Detector가 인식할 수 있는 object class는 pretrained label space에 제한된다.
-- Tracking quality는 detection quality와 frame-to-frame association 모두의 영향을 받는다.
-- Line counter는 별도의 학습 model이 아니라 tracking 결과 위에 만든 간단한 application logic이다.
+* Pretrained model을 사용했으며 detector 자체를 training하거나 fine-tuning하지 않았다.
+* Detector가 인식할 수 있는 object class는 pretrained label space에 제한된다.
+* Tracking quality는 detection quality와 frame-to-frame association 모두의 영향을 받는다.
+* Line counter는 별도의 학습 model이 아니라 tracking 결과 위에 만든 간단한 application logic이다.

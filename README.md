@@ -68,9 +68,9 @@ A pretrained YOLO model is first applied to a single image.
 
 For each detection, the model returns:
 
-- bounding-box coordinates
-- predicted class
-- confidence score
+* bounding-box coordinates
+* predicted class
+* confidence score
 
 <p align="center">
   <img src="results/figures/detection_result.png" width="850">
@@ -87,21 +87,19 @@ YOLO provides several bounding-box representations.
 For a box written as
 
 $$
-(x_1, y_1, x_2, y_2),
+(x_1, y_1, x_2, y_2)
 $$
 
-the center-width-height representation is
+the center coordinates are
 
 $$
-x_c = \frac{x_1+x_2}{2},
-\qquad
-y_c = \frac{y_1+y_2}{2},
+x_c = \frac{x_1 + x_2}{2}, \qquad y_c = \frac{y_1 + y_2}{2}
 $$
 
+and the width and height are
+
 $$
-w = x_2-x_1,
-\qquad
-h = y_2-y_1.
+w = x_2 - x_1, \qquad h = y_2 - y_1
 $$
 
 The predicted box coordinates were also used to crop each detected object directly from the original image.
@@ -149,15 +147,13 @@ Intersection over Union measures the overlap between two bounding boxes.
 For boxes $A$ and $B$,
 
 $$
-\operatorname{IoU}(A,B)
-=
-\frac{|A \cap B|}{|A \cup B|}.
+\mathrm{IoU}(A,B) = \frac{|A \cap B|}{|A \cup B|}
 $$
 
 A pair of person detections in the experiment had
 
 $$
-\operatorname{IoU} \approx 0.9109.
+\mathrm{IoU} \approx 0.9109
 $$
 
 This experiment connects geometric overlap with duplicate predictions and NMS-style post-processing.
@@ -177,10 +173,7 @@ Cosine similarity was used to compare the original image with several transforme
 For embeddings $a$ and $b$,
 
 $$
-\operatorname{cosine}(a,b)
-
-=
-\frac{a^\top b}{\|a\|\,\|b\|}.
+\mathrm{cosine}(a,b) = \frac{a^\top b}{|a|_2 |b|_2}
 $$
 
 Example results:
@@ -236,13 +229,13 @@ For each tracked object, the center of its bounding box was stored over time.
 If the center position at frame $t$ is
 
 $$
-p_t = (x_t, y_t),
+p_t = (x_t, y_t)
 $$
 
 then a track history can be represented as
 
 $$
-p_1, p_2, \ldots, p_T.
+p_1, p_2, \ldots, p_T
 $$
 
 Connecting these points produces the object's trajectory.
@@ -253,16 +246,16 @@ Trajectory visualization is also useful as a diagnostic tool. Sudden jumps can r
 
 The final application adds a virtual line and counts tracked objects when they cross it.
 
-For a horizontal line at $y=y_{\text{line}}$, a downward crossing can be detected when
+For a horizontal line at $y = y_{\mathrm{line}}$, a downward crossing can be detected when
 
 $$
-y_{t-1} < y_{\text{line}}
+y_{t-1} < y_{\mathrm{line}}
 $$
 
 and
 
 $$
-y_t \ge y_{\text{line}}.
+y_t \geq y_{\mathrm{line}}
 $$
 
 The complete application pipeline becomes:
@@ -285,22 +278,22 @@ This is the basic structure behind applications such as pedestrian counting, veh
 
 ## Key Concepts
 
-| Topic | What was explored |
-|---|---|
-| Object detection | Bounding boxes, classes, confidence |
-| Confidence threshold | Effect on retained predictions |
+| Topic                | What was explored                      |
+| -------------------- | -------------------------------------- |
+| Object detection     | Bounding boxes, classes, confidence    |
+| Confidence threshold | Effect on retained predictions         |
 | Bounding-box formats | `xyxy`, `xywh`, normalized coordinates |
-| IoU | Geometric overlap between boxes |
-| NMS | Suppression of overlapping predictions |
-| Object crop | Reusing detection coordinates |
-| Embedding | Learned image representation |
-| Cosine similarity | Similarity between feature vectors |
-| Tracking | Maintaining identity across frames |
-| Track ID | Temporal association of objects |
-| Trajectory | Visualizing motion history |
-| ID switch | Tracking association failure |
-| Line crossing | Turning motion into an event |
-| Object counting | Simple video analytics |
+| IoU                  | Geometric overlap between boxes        |
+| NMS                  | Suppression of overlapping predictions |
+| Object crop          | Reusing detection coordinates          |
+| Embedding            | Learned image representation           |
+| Cosine similarity    | Similarity between feature vectors     |
+| Tracking             | Maintaining identity across frames     |
+| Track ID             | Temporal association of objects        |
+| Trajectory           | Visualizing motion history             |
+| ID switch            | Tracking association failure           |
+| Line crossing        | Turning motion into an event           |
+| Object counting      | Simple video analytics                 |
 
 ## What I Learned
 
@@ -308,22 +301,22 @@ This project connected several computer-vision concepts in one continuous pipeli
 
 I learned how to:
 
-- inspect YOLO prediction objects directly
-- interpret bounding-box coordinates and confidence scores
-- compare multiple box representations
-- analyze confidence-threshold behavior
-- calculate IoU between predictions
-- connect IoU with NMS
-- crop detected objects
-- extract image embeddings from a pretrained detector
-- compare embeddings with cosine similarity
-- recognize the limits of raw detector embeddings
-- perform multi-object tracking
-- use persistent track IDs
-- visualize object trajectories
-- identify possible ID switches
-- detect line-crossing events
-- build a simple object counter
+* inspect YOLO prediction objects directly
+* interpret bounding-box coordinates and confidence scores
+* compare multiple box representations
+* analyze confidence-threshold behavior
+* calculate IoU between predictions
+* connect IoU with NMS
+* crop detected objects
+* extract image embeddings from a pretrained detector
+* compare embeddings with cosine similarity
+* recognize the limits of raw detector embeddings
+* perform multi-object tracking
+* use persistent track IDs
+* visualize object trajectories
+* identify possible ID switches
+* detect line-crossing events
+* build a simple object counter
 
 ## Main Takeaway
 
@@ -359,8 +352,8 @@ Jupyter Notebook
 
 ## Notes
 
-- A pretrained YOLO model was used; the detector itself was not trained or fine-tuned.
-- Detectable classes are limited by the pretrained label space.
-- Tracking performance depends on both detection quality and frame-to-frame association.
-- The line counter is application logic built on top of tracking rather than a separately trained model.
-- Video outputs were generated locally and omitted from the repository because of file-size limits.
+* A pretrained YOLO model was used; the detector itself was not trained or fine-tuned.
+* Detectable classes are limited by the pretrained label space.
+* Tracking performance depends on both detection quality and frame-to-frame association.
+* The line counter is application logic built on top of tracking rather than a separately trained model.
+* Video outputs were generated locally and omitted from the repository because of file-size limits.

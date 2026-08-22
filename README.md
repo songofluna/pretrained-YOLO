@@ -1,24 +1,41 @@
-# YOLO Object Detection, Tracking, and Line Counting
+# YOLO Object Detection and Tracking
 
 <p align="center">
   <img src="results/figures/hero.png" width="900">
 </p>
 
 <p align="center">
-  <b>Ultralytics YOLO · Object Detection · Confidence Thresholds · Embeddings · Multi-Object Tracking · Trajectory Visualization · Line Crossing Counter</b>
+  <b>Ultralytics YOLO · Object Detection · Confidence Thresholds · Embeddings · Multi-Object Tracking · Trajectory Visualization · Object Counting</b>
 </p>
 
 <p align="center">
-  <a href="README_KR.md">한국어 README</a>
+  <a href="README.md">English</a> |
+  <a href="README_KR.md">한국어</a>
 </p>
 
 ## Overview
 
-This project explores a pretrained YOLO model beyond a single object-detection call.
+This project explores a pretrained YOLO model beyond a single inference call.
 
-The goal is to understand what a modern detection pipeline actually returns, how confidence thresholds affect predictions, how detected regions can be inspected, what global image embeddings look like, and how frame-by-frame detections can be extended into tracking and a simple video analytics application.
+The workflow starts with single-image object detection, then examines bounding-box outputs, confidence thresholds, IoU, and learned image embeddings. It finally extends the detector to video using multi-object tracking, trajectory visualization, and a simple line-crossing counter.
 
-The project gradually moves from **image detection** to **video tracking**, then to **trajectory visualization** and finally to an **object line-crossing counter**.
+The project focuses on understanding how a pretrained detector can be used as a component of a larger computer-vision pipeline.
+
+```text
+Single-Image Detection
+        ↓
+Prediction Analysis
+        ↓
+Confidence / IoU Experiments
+        ↓
+Feature Embedding
+        ↓
+Multi-Object Tracking
+        ↓
+Trajectory Visualization
+        ↓
+Line-Crossing Counter
+```
 
 ## Project Structure
 
@@ -32,64 +49,80 @@ yolo-detection-tracking/
 │
 ├── assets/
 │   └── input/
-│       ├── mixkit-cars-driving-by-on-road-2022-hd-ready.mp4
-│       └── mixkit-young-bearded-man-walking-down-the-street-4888-hd-ready.mp4
 │
 └── results/
-    ├── figures/
-    │   ├── hero.png
-    │   ├── detection_result.png
-    │   ├── object_crops.png
-    │   ├── confidence_thresholds.png
-    │   ├── embedding_similarity.png
-    │   └── tracking_frame.png
-    │
-    └── videos/
-        ├── tracking_result.mp4
-        ├── tracking_trajectory.mp4
-        └── line_counter.mp4
+    └── figures/
+        ├── hero.png
+        ├── detection_result.png
+        ├── object_crops.png
+        ├── confidence_thresholds.png
+        ├── embedding_similarity.png
+        └── tracking_frame.png
 ```
+
+The tracking videos were generated locally but are not included in the repository because of file-size limits.
 
 ## 1. Pretrained Object Detection
 
 A pretrained YOLO model is first applied to a single image.
 
-For each detection, the model provides information such as:
+For each detection, the model returns:
 
-- bounding box coordinates
-- predicted class ID
-- class name
+- bounding-box coordinates
+- predicted class
 - confidence score
 
 <p align="center">
   <img src="results/figures/detection_result.png" width="850">
 </p>
 
-Instead of treating detection as only a plotted image, the notebook inspects the actual prediction objects returned by the model.
+Rather than treating the plotted image as the final result, the notebook directly inspects the returned prediction objects.
 
-This makes it possible to understand the detector as a structured prediction system rather than a black-box visualization tool.
+This makes it possible to understand object detection as a structured prediction problem.
 
-## 2. Cropping Detected Objects
+## 2. Bounding Boxes and Object Crops
 
-The predicted bounding boxes are used to crop each detected object from the original image.
+YOLO provides several bounding-box representations.
+
+For a box written as
+
+$$
+(x_1, y_1, x_2, y_2),
+$$
+
+the center-width-height representation is
+
+$$
+x_c = \frac{x_1+x_2}{2},
+\qquad
+y_c = \frac{y_1+y_2}{2},
+$$
+
+$$
+w = x_2-x_1,
+\qquad
+h = y_2-y_1.
+$$
+
+The predicted box coordinates were also used to crop each detected object directly from the original image.
 
 <p align="center">
   <img src="results/figures/object_crops.png" width="900">
 </p>
 
-This step connects bounding-box coordinates directly to image indexing and demonstrates how detector outputs can be reused in downstream computer-vision pipelines.
+This shows that detector outputs can be reused directly in downstream image-processing pipelines.
 
-## 3. Confidence Threshold Analysis
+## 3. Confidence Threshold Experiment
 
-The confidence threshold determines which predictions are retained.
+The confidence threshold controls which detections are retained.
 
-Predictions were compared across several threshold values:
+The same image was evaluated using several thresholds:
 
 ```text
-conf = 0.10
-conf = 0.25
-conf = 0.50
-conf = 0.80
+0.10
+0.25
+0.50
+0.80
 ```
 
 One experiment produced:
@@ -105,34 +138,33 @@ conf=0.80 -> {'person': 3, 'bus': 1}
   <img src="results/figures/confidence_thresholds.png" width="950">
 </p>
 
-Lower thresholds increase recall but also admit weaker predictions. Higher thresholds remove low-confidence detections but may discard valid objects.
+Lower thresholds keep more predictions, including weaker ones. Higher thresholds are more conservative but may remove valid objects.
 
 The experiment makes the precision-recall tradeoff visible at the prediction level.
 
-## 4. IoU and Overlapping Boxes
+## 4. IoU and Overlapping Predictions
 
-Intersection over Union (IoU) was examined directly using pairwise bounding-box comparisons.
+Intersection over Union measures the overlap between two bounding boxes.
 
-For two boxes \(A\) and \(B\),
+For boxes $A$ and $B$,
 
-\[
-\mathrm{IoU}(A,B)
+$$
+\operatorname{IoU}(A,B)
 =
-\frac{|A \cap B|}
-{|A \cup B|}
-\]
+\frac{|A \cap B|}{|A \cup B|}.
+$$
 
-A pair of person detections in the experiment had a very high overlap:
+A pair of person detections in the experiment had
 
-```text
-Maximum IoU: 0.9109
-```
+$$
+\operatorname{IoU} \approx 0.9109.
+$$
 
-This was useful for understanding why duplicate or highly overlapping detections matter and how IoU is related to suppression and box matching.
+This experiment connects geometric overlap with duplicate predictions and NMS-style post-processing.
 
-The notebook also compares end-to-end prediction behavior with a traditional NMS-style setting.
+The notebook also examines the difference between traditional NMS-based detection and YOLO26's end-to-end prediction behavior.
 
-## 5. Image Embeddings
+## 5. Image Embedding Experiment
 
 The pretrained model was also used to extract a 256-dimensional image embedding.
 
@@ -140,7 +172,15 @@ The pretrained model was also used to extract a 256-dimensional image embedding.
 Embedding shape: torch.Size([256])
 ```
 
-Cosine similarity was then measured between the original image and modified versions of it.
+Cosine similarity was used to compare the original image with several transformed or unrelated inputs.
+
+For embeddings $a$ and $b$,
+
+$$
+\operatorname{cosine}(a,b)
+=
+\frac{a^\top b}{\|a\|\,\|b\|}.
+$$
 
 Example results:
 
@@ -158,139 +198,151 @@ Original vs Noise      : 0.8408
   <img src="results/figures/embedding_similarity.png" width="800">
 </p>
 
-The experiment showed that the extracted representation is highly invariant to several image transformations.
+The embedding was highly stable under flip, grayscale conversion, and blur.
 
-It also demonstrated an important limitation: a generic global embedding from the detector should not automatically be interpreted as a metric specifically optimized for image identity or semantic retrieval.
+However, unrelated inputs also produced relatively high cosine similarity. This showed that a detector's raw embedding should not automatically be interpreted as a semantic-similarity metric.
 
 ## 6. Multi-Object Tracking
 
 Detection was then extended from a single image to video.
 
-Instead of independently detecting objects in every frame, tracking assigns persistent IDs to objects across time.
+Instead of independently detecting objects in every frame, the tracker assigns persistent IDs across time.
+
+```text
+Detection
+    ↓
+Frame-to-Frame Association
+    ↓
+Persistent Track ID
+```
 
 <p align="center">
   <img src="results/figures/tracking_frame.png" width="900">
 </p>
 
-Tracking turns a sequence of detections into temporal object identities:
+This turns the question
 
-```text
-Detection
-    ↓
-Frame-to-frame association
-    ↓
-Persistent track ID
-```
+> What objects are in this frame?
 
-Video result:
+into
 
-[View tracking result](results/videos/tracking_result.mp4)
+> Which object in this frame corresponds to the object seen previously?
 
 ## 7. Trajectory Visualization
 
-The center position of each tracked object is stored over time and connected to form a trajectory.
+For each tracked object, the center of its bounding box was stored over time.
 
-This makes the temporal behavior of the tracker directly visible.
+If the center position at frame $t$ is
 
-[View trajectory result](results/videos/tracking_trajectory.mp4)
+$$
+p_t = (x_t, y_t),
+$$
 
-Trajectory visualization is not only cosmetic. Sudden jumps or implausible paths can reveal tracking failures such as an **ID switch**, where the tracker incorrectly transfers one object's identity to another object.
+then a track history can be represented as
+
+$$
+p_1, p_2, \ldots, p_T.
+$$
+
+Connecting these points produces the object's trajectory.
+
+Trajectory visualization is also useful as a diagnostic tool. Sudden jumps can reveal tracking failures such as an ID switch.
 
 ## 8. Line-Crossing Object Counter
 
-The final application adds a virtual line to the video and counts tracked objects when they cross it.
+The final application adds a virtual line and counts tracked objects when they cross it.
 
-The basic pipeline is:
+For a horizontal line at $y=y_{\text{line}}$, a downward crossing can be detected when
+
+$$
+y_{t-1} < y_{\text{line}}
+$$
+
+and
+
+$$
+y_t \ge y_{\text{line}}.
+$$
+
+The complete application pipeline becomes:
 
 ```text
-Video frame
+Video Frame
     ↓
-YOLO detection
+YOLO Detection
     ↓
-Object tracking
+Object Tracking
     ↓
-Track center calculation
+Track Center
     ↓
-Line-crossing test
+Line-Crossing Test
     ↓
-Count update
+Object Count
 ```
 
-[View line counter result](results/videos/line_counter.mp4)
+This is the basic structure behind applications such as pedestrian counting, vehicle counting, CCTV analytics, and entrance monitoring.
 
-Because each object has a persistent track ID, the system can avoid simply counting the same object again in every frame.
+## Key Concepts
 
-This is the basic structure behind practical applications such as:
-
-- traffic flow measurement
-- pedestrian counting
-- CCTV analytics
-- entrance/exit monitoring
-- simple smart-camera systems
-
-## Key Concepts Explored
-
-| Topic | What was examined |
+| Topic | What was explored |
 |---|---|
 | Object detection | Bounding boxes, classes, confidence |
-| COCO classes | Understanding the detector's pretrained label space |
 | Confidence threshold | Effect on retained predictions |
-| IoU | Geometric overlap between bounding boxes |
+| Bounding-box formats | `xyxy`, `xywh`, normalized coordinates |
+| IoU | Geometric overlap between boxes |
 | NMS | Suppression of overlapping predictions |
-| Cropping | Reusing detector coordinates for downstream processing |
-| Embeddings | Extracting and comparing learned image representations |
-| Cosine similarity | Similarity between embedding vectors |
-| Tracking | Maintaining object identity across frames |
-| Track IDs | Associating detections through time |
-| Trajectories | Visualizing motion history |
-| ID switch | Diagnosing tracking association errors |
-| Line crossing | Event detection from tracked motion |
-| Object counting | A simple video analytics application |
+| Object crop | Reusing detection coordinates |
+| Embedding | Learned image representation |
+| Cosine similarity | Similarity between feature vectors |
+| Tracking | Maintaining identity across frames |
+| Track ID | Temporal association of objects |
+| Trajectory | Visualizing motion history |
+| ID switch | Tracking association failure |
+| Line crossing | Turning motion into an event |
+| Object counting | Simple video analytics |
 
 ## What I Learned
 
-This project helped connect several concepts that are easy to study separately but much clearer when combined in one pipeline.
+This project connected several computer-vision concepts in one continuous pipeline.
 
 I learned how to:
 
-- inspect YOLO prediction objects instead of only displaying them
+- inspect YOLO prediction objects directly
 - interpret bounding-box coordinates and confidence scores
-- understand how confidence thresholds change model output
-- calculate and inspect IoU between predictions
-- connect overlapping boxes to NMS behavior
-- crop detected objects using box coordinates
-- extract learned embeddings from a pretrained vision model
-- evaluate embedding similarity with cosine similarity
-- distinguish generic feature similarity from task-specific metric learning
-- run object tracking on video
-- maintain and use track IDs across frames
-- visualize trajectories as a diagnostic tool
+- compare multiple box representations
+- analyze confidence-threshold behavior
+- calculate IoU between predictions
+- connect IoU with NMS
+- crop detected objects
+- extract image embeddings from a pretrained detector
+- compare embeddings with cosine similarity
+- recognize the limits of raw detector embeddings
+- perform multi-object tracking
+- use persistent track IDs
+- visualize object trajectories
+- identify possible ID switches
 - detect line-crossing events
-- build a simple object counter from detection and tracking outputs
+- build a simple object counter
 
 ## Main Takeaway
 
-A pretrained detector becomes much more useful once its outputs are treated as data.
+The main lesson of this project is that a pretrained detector becomes much more useful when its outputs are treated as data rather than only as a final visualization.
 
-Bounding boxes can be cropped, compared, tracked, accumulated over time, and converted into higher-level events.
+Bounding boxes can be cropped and compared, detections can be associated through time, trajectories can be reconstructed, and tracked motion can be converted into higher-level events.
 
-The progression in this project was therefore:
+The final progression was:
 
 ```text
-Object Detection
-      ↓
-Prediction Analysis
-      ↓
-Embedding Inspection
-      ↓
-Multi-Object Tracking
-      ↓
-Trajectory Analysis
-      ↓
-Line-Crossing Counter
+Detection
+   ↓
+Analysis
+   ↓
+Tracking
+   ↓
+Trajectory
+   ↓
+Event Detection
 ```
-
-The final result is a small but complete example of how a modern computer-vision model can be turned into an application pipeline rather than used only for one-shot inference.
 
 ## Tools
 
@@ -306,7 +358,8 @@ Jupyter Notebook
 
 ## Notes
 
-- The project uses a pretrained model; no detector training or fine-tuning is performed.
-- The detector can only predict classes included in its pretrained label space.
-- Tracking quality depends on both detection quality and frame-to-frame association.
-- The line counter is a simple application built on top of tracking rather than a separate learned model.
+- A pretrained YOLO model was used; the detector itself was not trained or fine-tuned.
+- Detectable classes are limited by the pretrained label space.
+- Tracking performance depends on both detection quality and frame-to-frame association.
+- The line counter is application logic built on top of tracking rather than a separately trained model.
+- Video outputs were generated locally and omitted from the repository because of file-size limits.

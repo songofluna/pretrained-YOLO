@@ -178,6 +178,7 @@ For embeddings $a$ and $b$,
 
 $$
 \operatorname{cosine}(a,b)
+
 =
 \frac{a^\top b}{\|a\|\,\|b\|}.
 $$
